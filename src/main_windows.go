@@ -6,66 +6,62 @@ package main
 
 import (
 	"cef"
-	"fmt"
-	"io/ioutil"
-	"log"
-	"net"
-	"net/http"
+	"encoding/json"
+
 	"net/url"
 	"os"
-	"os/exec"
-	"strings"
-	"sync"
+
 	"syscall"
 	"time"
 	"unsafe"
 	"wingui"
-
-	ini "github.com/go-ini/ini"
 )
 
-var (
-	Logger   *log.Logger = log.New(os.Stdout, "[main] ", log.Lshortfile)
-	cfg, _               = ini.LoadSources(ini.LoadOptions{AllowBooleanKeys: true}, "app.ini")
-	cmd      *exec.Cmd
-	once     *sync.Once = &sync.Once{}
-	localURL            = "127.0.0.1:51212"
-)
+type Settings struct {
+	SrvURL      string
+	Width       int32
+	Height      int32
+	Title       string
+	URL         string
+	AppPid      int
+	LauncherPid int
+}
 
 func main() {
+	args := Settings{}
+	buf := make([]byte, 1024)
+	var err error
+	var n int
+	wait := make(chan bool, 1)
+	go func() {
+		n, err = os.Stdin.Read(buf)
+		wait <- true
+	}()
+	select {
+	case <-wait:
+	case <-time.After(time.Second):
+		os.Stdin.Close()
+	}
+	if err == nil {
+		json.Unmarshal(buf[:n], &args)
+	}
 	hInstance, e := wingui.GetModuleHandle(nil)
 	if e != nil {
 		wingui.AbortErrNo("GetModuleHandle", e)
 	}
-
-	cef.ExecuteProcess(unsafe.Pointer(hInstance))
-
 	settings := cef.Settings{}
-
+	cef.ExecuteProcess(unsafe.Pointer(hInstance))
 	cef.Initialize(settings)
-
-	title, _ := cfg.Section("").GetKey("app_title")
-
 	wndproc := syscall.NewCallback(WndProc)
-	Logger.Println("CreateWindow")
-	hwnd := wingui.CreateWindow(title.String(), wndproc)
-
+	hwnd := wingui.CreateWindow(args.Title, wndproc, args.Width, args.Height)
 	browserSettings := cef.BrowserSettings{}
-
-	url0, _ := cfg.Section("").GetKey("start_url")
-	_url := url0.String()
-	_url = "http://" + localURL + "/load?url=" + url.QueryEscape(_url)
-	cef.CreateBrowser(unsafe.Pointer(hwnd), browserSettings, _url)
-
-	// It should be enough to call WindowResized after 10ms,
-	// though to be sure let's extend it to 500ms.
+	_url0 := args.SrvURL + "/load?url=" + url.QueryEscape(args.URL)
+	cef.CreateBrowser(unsafe.Pointer(hwnd), browserSettings, _url0)
 	time.AfterFunc(time.Millisecond*500, func() {
 		cef.WindowResized(unsafe.Pointer(hwnd))
 	})
-	go execStart()
 	cef.RunMessageLoop()
 	cef.Shutdown()
-	(*cmd).Process.Kill()
 	os.Exit(0)
 }
 
@@ -81,72 +77,6 @@ func WndProc(hwnd syscall.Handle, msg uint32, wparam, lparam uintptr) (rc uintpt
 		cef.QuitMessageLoop()
 	default:
 		rc = wingui.DefWindowProc(hwnd, msg, wparam, lparam)
-	}
-	return
-}
-func execStart() {
-	once.Do(func() {
-		go run_http_server()
-		argsString, _ := cfg.Section("").GetKey("start_exec")
-		if argsString.String() == "" {
-			return
-		}
-		args := strings.Split(argsString.String(), " ")
-		//fmt.Printf("\nARGS:%v", args)
-		if len(args) > 1 {
-			cmd = exec.Command(args[0], args[1:]...)
-		} else {
-			cmd = exec.Command(args[0])
-		}
-		err := cmd.Start()
-		if err != nil {
-			fmt.Printf("ERR:%s", err)
-			os.Exit(100)
-		}
-	})
-}
-
-func handler(w http.ResponseWriter, req *http.Request) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	if strings.HasPrefix(req.URL.Path, "/load") {
-		f, _ := os.OpenFile("start.html", os.O_RDONLY, 0666)
-		c, _ := ioutil.ReadAll(f)
-		fmt.Fprintf(w, string(c))
-	} else if strings.HasPrefix(req.URL.Path, "/ping") {
-		_url := req.URL.Query().Get("url")
-		err := HTTPGet(_url, 5000)
-		if err == nil {
-			fmt.Fprintf(w, "1")
-		}
-		fmt.Println(err)
-	}
-}
-
-func run_http_server() {
-	http.HandleFunc("/", handler)
-	listener, err := net.Listen("tcp", localURL)
-	if err != nil {
-		panic(err)
-	}
-	localURL += fmt.Sprint("%d", listener.Addr().(*net.TCPAddr).Port)
-	fmt.Printf("\nUsing port:%d\n", listener.Addr().(*net.TCPAddr).Port)
-	http.Serve(listener, nil)
-}
-
-func HTTPGet(URL string, timeout int) (err error) {
-	tr := &http.Transport{}
-	var resp *http.Response
-	var client *http.Client
-	defer func() {
-		if resp != nil && resp.Body != nil {
-			resp.Body.Close()
-		}
-		tr.CloseIdleConnections()
-	}()
-	client = &http.Client{Timeout: time.Millisecond * time.Duration(timeout), Transport: tr}
-	resp, err = client.Get(URL)
-	if err != nil {
-		return
 	}
 	return
 }

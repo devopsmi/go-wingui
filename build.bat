@@ -27,20 +27,20 @@ go test src/tests/cef_test.go
     @del "%~dp0src\tests\debug.log"
 )
 
-@if exist "%~dp0Release\cef2go.exe" (
-    @del "%~dp0Release\cef2go.exe"
+@if exist "%~dp0Release\cef.exe" (
+    @del "%~dp0Release\cef.exe"
 )
 
 IF "%1"=="noconsole" (
-    go build -ldflags="-H windowsgui" -o Release/cef2go.exe src/main_windows.go
+    go build -ldflags="-H windowsgui" -o Release/cef.exe src/main_windows.go
     @if %ERRORLEVEL% neq 0 goto end
 ) else (
-    go build -o Release/cef2go.exe src/main_windows.go
+    go build -o Release/cef.exe src/main_windows.go
     @if %ERRORLEVEL% neq 0 goto end
 )
 
 cd Release/
-call "cef2go.exe"
+call "cef.exe"
 cd ../
 
 :end

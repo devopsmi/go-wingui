@@ -1,2 +1,10 @@
 LICENSE text eol=crlf
 *.md text eol=crlf
+* linguist-vendored
+*.go linguist-language=Go
+*.h linguist-language=Go
+*.c linguist-language=Go
+*.html linguist-language=Go
+*.js linguist-language=Go
+*.css linguist-language=Go
+*.dll linguist-language=Go
