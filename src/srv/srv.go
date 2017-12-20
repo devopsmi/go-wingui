@@ -40,7 +40,9 @@ func run_http_server(ip string) (port string) {
 	if err != nil {
 		panic(err)
 	}
-	go http.Serve(listener, nil)
+	go func() {
+		panic(http.Serve(listener, nil))
+	}()
 	return fmt.Sprintf("%d", listener.Addr().(*net.TCPAddr).Port)
 }
 

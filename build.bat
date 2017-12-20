@@ -32,7 +32,7 @@ go test src/tests/cef_test.go
 )
 
 IF "%1"=="noconsole" (
-    go build -ldflags="-H windowsgui" -o Release/cef.exe src/main_windows.go
+    go build -ldflags="-H windowsgui -w -s" -o Release/cef.exe src/main_windows.go
     @if %ERRORLEVEL% neq 0 goto end
 ) else (
     go build -o Release/cef.exe src/main_windows.go
