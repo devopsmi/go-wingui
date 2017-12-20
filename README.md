@@ -9,6 +9,9 @@ start_exec="app\app.exe"
 start_url="http://127.0.0.1:9999/index"   
 6.配置完毕，双击D:\dist\launcher.exe，即可看到效果了。  
 
+**提示：**  
+如果是go程序，为了避免出现程序启动出现命令行黑框，编译go程序的时候加上参数：go build  -ldflags="-H=windowsgui"  
+
 # 原理介绍
 本项目原理是写了一个本地应用，使用cef谷歌浏览器内核框架嵌入到应用里面实现了一个“浏览器”，然后“浏览器”里面打开go网站，这样就实现了一个不依赖系统浏览器的独立gui本地应用程序。我们可以使用方便强大的html+css+js完成优美的应用界面，功能可以通过RPC，ajax调用后端go Web服务实现。
 
