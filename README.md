@@ -1,33 +1,49 @@
-## ʹ�ò���     
-### ����Ҫ��     
-1��windows7   
+# 使用说明
+1.环境要求是windows，理论上xp以上32位，64位都支持。  
+2.下载程序[go-wingui](https://github.com/snail007/go-wingui/releases/tag/1.0)  
+3.解压到比如D盘，D:\dist  
+4.把你的go网站程序(假设名字是app.exe)放入D:\dist\app文件夹  
+5、假设你的app.exe启动之后，访问链接是http://127.0.0.1:9999/index  
+编辑D:\dist\launcher.ini,做如下部分修改：  
+start_exec="app\app.exe"  
+start_url="http://127.0.0.1:9999/index"   
+6.配置完毕，双击D:\dist\launcher.exe，即可看到效果了。  
+
+# 原理介绍
+本项目原理是写了一个本地应用，使用cef谷歌浏览器内核框架嵌入到应用里面实现了一个“浏览器”，然后“浏览器”里面打开go网站，这样就实现了一个不依赖系统浏览器的独立gui本地应用程序。我们可以使用方便强大的html+css+js完成优美的应用界面，功能可以通过RPC，ajax调用后端go Web服务实现。
+
+***如果你想自定义一些其他功能，可以对项目进行二次开发，步骤如下***  
+
+## 项目开发使用步骤     
+### 环境要求     
+1、windows7   
    
-2����װMinGW   
-���أ�https://github.com/snail007/go-gui/releases/tag/mingw   
-��ѹ����C:\MinGW   
+2、安装MinGW   
+下载：https://github.com/snail007/go-gui/releases/tag/mingw   
+解压到：C:\MinGW   
    
-3����װgo1.3.3 (32λ)   
-���أ�https://github.com/snail007/go-gui/releases/tag/go1.3.3_win32   
-��ѹ����C:\go   
+3、安装go1.3.3 (32位)   
+下载：https://github.com/snail007/go-gui/releases/tag/go1.3.3_win32   
+解压到：C:\go   
    
-4���½�Ŀ¼��D:\gowork   
-�½�Ŀ¼��D:\gowork\src   
-�½�Ŀ¼��D:\gowork\pkg   
-�½�Ŀ¼��D:\gowork\bin   
+4、新建目录：D:\gowork   
+新建目录：D:\gowork\src   
+新建目录：D:\gowork\pkg   
+新建目录：D:\gowork\bin   
    
-5���������������D:\gowork\src\ ִ�п�¡���git clone https://github.com/snail007/go-gui.git   
+5、命令行下面进入D:\gowork\src\ 执行克隆命令：git clone https://github.com/snail007/go-gui.git   
    
-6���޸�ϵͳ���ԣ���·��D:\gowork\bin;D:\go\bin;C:\MinGW\bin;׷�ӵ�ϵͳPATH���������У������ʼ��   
-Ϊ����IDE���ܹ���ȷʶ���·����ִ�����������   
-�½���������GOROOT��ֵ�ǣ�C:\go   
-�½���������GOPATH��ֵ�ǣ�C:\gowork;C:\gowork\src\go-gui   
+6、修改系统属性，把路径D:\gowork\bin;D:\go\bin;C:\MinGW\bin;追加到系统PATH环境变量中，放在最开始。   
+为了在IDE中能够正确识别包路径，执行下面操作：   
+新建环境变量GOROOT，值是：C:\go   
+新建环境变量GOPATH，值是：C:\gowork;C:\gowork\src\go-gui   
    
-6��C:\gowork\src\go-gui\src ����Ŀ����·��   
-7���������������C:\gowork\src\go-gui��ִ�� build.bat noconsole ���ɣ�   
-Ȼ��C:\gowork\src\go-gui\Release���ǿ��Է����ĳ��򣬰�����ļ��и��Ƶ������ط��Ϳ����ˡ�   
-�����go-gui.exe����ڳ���   
+6、C:\gowork\src\go-gui\src 是项目代码路径   
+7、命令行下面进入C:\gowork\src\go-gui，执行 build.bat noconsole 即可，   
+然后C:\gowork\src\go-gui\Release就是可以发布的程序，把这个文件夹复制到其它地方就可以了。   
+里面的go-gui.exe是入口程序   
    
-### �����ǹٷ���װ����   
+### 以下是官方安装方法   
 CEF2go   
 ======   
    
